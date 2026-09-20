@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+local.properties
+*.keystore
+*.jks
+*.p12
+*.pem
+.DS_Store
+.idea/
+.gradle/
+**/build/
+DerivedData/
+node_modules/
