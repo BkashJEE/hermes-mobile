@@ -13,3 +13,4 @@
 /* Keep browser focus scrolling inside MobileScroll; fixed app chrome must not shift. */
 .device-screen:has(.hermes-app){overflow:clip}
 .phone-address{display:block;color:#83dee2;font-size:13px;overflow-wrap:anywhere;margin-top:14px}.pair-code{padding:20px;text-align:center;border:1px solid #34434e;border-radius:12px;background:#151b20}.pair-code>strong{font-size:30px;letter-spacing:6px;color:#83dee2}.paired-devices{margin-top:24px}.paired-device{display:flex;align-items:center;gap:12px;border-bottom:1px solid #273640;padding:12px 0}.paired-device span{flex:1;overflow-wrap:anywhere}.paired-device small{display:block;font-size:12px;color:#a5b0bd;margin-top:5px}.paired-device button{min-height:44px;color:#ffb5b5!important;padding:8px!important}
+.avatar svg{width:27px;height:27px;color:#c8d2dc;filter:drop-shadow(0 0 5px rgba(131,222,226,.14))}.avatar.small svg{width:18px;height:18px}

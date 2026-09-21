@@ -74,3 +74,32 @@ Verified the real HTTPS pairing page at 393 × 852. Verified authenticated agent
 ## New-session history race fix
 
 Confirmed the reported message completed and its history became available without resubmission. Added backend regression checks for pending new transcripts, later persistence, unrelated 404s, and bounded completion grace. Browser fixture verification observed the preparing state automatically become the saved transcript. Reloaded the paired app and confirmed the original conversation and reply remained visible. Fifteen tests, both builds, and all protected runtime checks passed.
+
+## Agent profile icon update — September 21, 2026
+
+Source visual truth: `/tmp/codex-clipboard-660a54fd-c470-4ef8-9d3e-78e1d2e91e7c.png` (153 × 685 pixels), showing the reported repeated generic profile symbols. Implementation evidence: `/tmp/hermes-icons-after.png` (381 × 824 pixels) and normalized focused crop `/tmp/hermes-icons-after-focus.png` (153 × 685 pixels). Combined comparison: `/tmp/hermes-icons-comparison.png` (306 × 685 pixels). Browser CSS viewport was set to 390 × 844 at device scale 1; the in-app content capture was 381 × 824 because of browser viewport insets. The focused crop was normalized to the source dimensions before comparison.
+
+State: authenticated Agents list with the same live profiles and dark theme. The source is a focused crop rather than a complete screen, so full-view evidence is used only to confirm the surrounding layout stayed unchanged. The focused side-by-side comparison is the authoritative icon evidence.
+
+**Findings**
+
+- No actionable P0/P1/P2 differences remain in the requested icon scope. CEO, Gary, Sabiska, Sanju, and Nova now have distinct briefcase, terminal, stack, binoculars, and four-point-star symbols. The default profile retains the supplied Hermes emblem.
+- P3: Sabiska retains the familiar stack concept from the source because it was already distinct; it now uses the same duotone family and rendering treatment as the other profiles.
+
+**Required fidelity surfaces**
+
+- Fonts and typography: unchanged; agent names, previews, and statuses retain their existing size, weight, wrapping, and hierarchy.
+- Spacing and layout rhythm: unchanged; avatar circles remain 48 × 48 with the original row alignment and touch targets. New glyphs fit at 27 × 27 without clipping.
+- Colors and visual tokens: silver duotone glyphs use the existing charcoal surface, border, and restrained cyan shadow treatment. Status colors remain text-backed.
+- Image quality and asset fidelity: the raster Hermes emblem remains sharp. Other profiles use the official Phosphor React icon library rather than handcrafted SVG or CSS drawings.
+- Copy and content: unchanged; no roles or capabilities were invented to justify the icons.
+
+**Interaction and verification**
+
+- Opened Gary from the Agents list and returned successfully; no message was sent.
+- Browser console warnings/errors: none.
+- Fifteen backend tests, both production builds, and all 28 protected runtime checks passed.
+
+Comparison history: initial evidence showed repeated chat symbols for CEO/Gary plus generic search/person symbols for Sanju/Nova. The post-fix normalized comparison shows five visually distinct glyphs with consistent stroke weight, scale, circle treatment, and baseline alignment.
+
+final result: passed

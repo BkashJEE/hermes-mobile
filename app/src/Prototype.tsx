@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeftIcon, ArrowUpIcon, ChatBubbleIcon, ChevronRightIcon, ClockIcon, ExclamationTriangleIcon, GearIcon, LayersIcon, MagnifyingGlassIcon, PlusIcon, ReloadIcon, StopIcon, PersonIcon, CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, ArrowUpIcon, ChatBubbleIcon, ChevronRightIcon, ClockIcon, ExclamationTriangleIcon, GearIcon, LayersIcon, MagnifyingGlassIcon, PlusIcon, ReloadIcon, StopIcon, CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
+import { Binoculars, Briefcase, Sparkle, Stack, StarFour, TerminalWindow } from '@phosphor-icons/react';
 import { BottomSheet, KeyboardInput, KeyboardTextarea, MobileScroll, useKeyboard, useKeyboardInsets } from './app-ui';
 import Pairing from './Pairing';
 
@@ -14,7 +15,17 @@ async function api<T>(route:string, body?:unknown):Promise<T> {
   const result = await res.json(); if(res.status===401)window.dispatchEvent(new Event('hermes-auth-expired')); if(!res.ok) throw new Error(result.error || 'Connection failed'); return result;
 }
 function stored<T>(key:string, fallback:T):T { try { return JSON.parse(sessionStorage.getItem(key)||'null') ?? fallback; } catch { return fallback; } }
-function Avatar({id,small=false}:{id:string;small?:boolean}) { const icons=[PersonIcon,MagnifyingGlassIcon,LayersIcon,ChatBubbleIcon]; const Icon=icons[Array.from(id).reduce((n,c)=>n+c.charCodeAt(0),0)%icons.length];return <span className={'avatar '+(small?'small':'')}>{id==='default'?<img src="/hermes-emblem.png" alt=""/>:<Icon/>}</span>; }
+const profileIcons={
+  ceo:Briefcase,
+  gary:TerminalWindow,
+  sabiska:Stack,
+  sanju:Binoculars,
+  nova:StarFour,
+} as const;
+function Avatar({id,small=false}:{id:string;small?:boolean}) {
+  const Icon=profileIcons[id.toLowerCase() as keyof typeof profileIcons]||Sparkle;
+  return <span className={'avatar '+(small?'small':'')} data-profile={id.toLowerCase()}>{id==='default'?<img src="/hermes-emblem.png" alt=""/>:<Icon weight="duotone" aria-hidden="true"/>}</span>;
+}
 export default function Prototype() {
   const keyboard=useKeyboard(); const {bottomInset}=useKeyboardInsets();
   const [tab,setTab]=useState<'agents'|'work'|'settings'>('agents');
