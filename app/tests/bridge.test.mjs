@@ -11,7 +11,7 @@ function fixture(t) {
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'hermes-mobile-test-'));
   fs.writeFileSync(path.join(dir,'.env'),`API_SERVER_KEY=${key}\n`);
   fs.writeFileSync(path.join(dir,'gateway_state.json'),JSON.stringify({platforms:{api_server:{state:'connected',listener_base:'http://127.0.0.1:9999'}}}));
-  const seen=[],runs=new Map();let loseResponse=false;
+  const seen=[],runs=new Map(),histories=new Map();let loseResponse=false;
   const fetcher=async(url,opts)=>{
     assert.equal(opts.headers.Authorization,`Bearer ${key}`);assert.equal(opts.redirect,'error');
     const p=new URL(url).pathname;seen.push({p,opts});
@@ -22,13 +22,14 @@ function fixture(t) {
       if(loseResponse){loseResponse=false;throw Error('response lost after acceptance');}
       return Response.json(runs.get(k));
     }
+    if(p.startsWith('/api/sessions/')&&p.endsWith('/messages')){const sid=p.split('/')[3];return histories.has(sid)?Response.json({session_id:sid,data:histories.get(sid)}):Response.json({error:{code:'session_not_found'}},{status:404});}
     const r=[...runs.values()].find(r=>p.includes(r.run_id));
     if(r){if(p.endsWith('/stop'))r.status='stopping';if(p.endsWith('/approval')){r.status='running';delete r.approval;}return Response.json(r);}
     return Response.json({error:'not found'},{status:404});
   };
   const bridge=createBridge({root:dir,stateDir:path.join(dir,'state'),fetcher});
   t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
-  return {bridge,dir,seen,runs,lose:()=>{loseResponse=true;}};
+  return {bridge,dir,seen,runs,histories,lose:()=>{loseResponse=true;}};
 }
 const message=(id='11111111-1111-4111-8111-111111111111')=>({requestId:id,profileId:'default',input:'fixture check',tracked:true});
 test('loopback discovery rejects remote and credential-bearing upstreams',t=>{
@@ -84,4 +85,22 @@ test('connection loss preserves last known run state and exposes uncertainty',as
   const offline=createBridge({root:f.dir,stateDir:path.join(f.dir,'state'),fetcher:async()=>{throw Error('offline');}});
   const result=await offline.dispatch('GET','/runs');assert.equal(result.runs[0].status,'running');assert.ok(result.runs[0].connectionError);
   await assert.rejects(offline.dispatch('POST',`/runs/${message().requestId}/stop`,{}),{status:409});
+});
+
+test('new transcript 404 is pending until saved without resubmitting the run',async t=>{
+  const f=fixture(t);const r=await f.bridge.dispatch('POST','/messages',message());
+  const route=`/profiles/default/sessions/${r.sessionId}`;
+  assert.equal((await f.bridge.dispatch('GET',route)).pending,true);
+  await assert.rejects(f.bridge.dispatch('GET','/profiles/default/sessions/unrelated'),{status:404});
+  f.histories.set(r.sessionId,[{id:'u',role:'user',content:'fixture check'}]);
+  const saved=await f.bridge.dispatch('GET',route);assert.equal(saved.pending,undefined);assert.equal(saved.messages[0].content,'fixture check');
+  assert.equal(f.seen.filter(s=>s.p==='/v1/runs').length,1);
+});
+test('completed transcript gets bounded save grace; failed sessions and generic 404s remain errors',async t=>{
+  const f=fixture(t);const r=await f.bridge.dispatch('POST','/messages',message());const route=`/profiles/default/sessions/${r.sessionId}`;
+  const other=createBridge({root:f.dir,stateDir:path.join(f.dir,'state'),fetcher:async()=>Response.json({error:'route missing'},{status:404})});
+  await assert.rejects(other.dispatch('GET',route),{status:404});
+  r.status='completed';r.updatedAt=Date.now();assert.equal((await f.bridge.dispatch('GET',route)).pending,true);
+  r.updatedAt=Date.now()-16000;await assert.rejects(f.bridge.dispatch('GET',route),{status:404});
+  r.status='failed';r.updatedAt=Date.now();await assert.rejects(f.bridge.dispatch('GET',route),{status:404});
 });

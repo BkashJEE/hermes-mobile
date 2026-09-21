@@ -67,6 +67,8 @@ For a persistent host installation, run `server/start.mjs` under a user service 
 
 ### Phone validation
 
-Thirteen fixture tests cover the original bridge plus code expiry/reuse/guess limits, token hashing, session expiry, immediate revocation, secure cookie flags, remote authentication, local-only pairing administration, static asset boundaries and request-size bounds. A live TLS round-trip on the development host paired a temporary device, read profile availability, revoked it, and verified HTTP 401 afterward. No model requests were sent during that check.
+Fifteen fixture tests cover the original bridge plus code expiry/reuse/guess limits, token hashing, session expiry, immediate revocation, secure cookie flags, remote authentication, local-only pairing administration, static asset boundaries and request-size bounds. A live TLS round-trip on the development host paired a temporary device, read profile availability, revoked it, and verified HTTP 401 afterward. No model requests were sent during that check.
 
 The phone entry was browser-checked at 393 × 852 and 427 × 952. Authenticated layout/history checks used sample data. The desktop device-frame runtime remains protected and unchanged. Actual iOS/Android keyboard behavior and a physical-phone connection still need device testing.
+
+New sessions can briefly return `session_not_found` after a run is accepted. For app-created sessions with a known active run (or a completed run within a 15-second save grace), the bridge reports pending history. The client retries every two seconds without resending the message. Unrelated missing sessions and missing routes still report errors; history errors have a read-only retry control.

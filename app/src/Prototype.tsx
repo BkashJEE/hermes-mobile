@@ -22,6 +22,7 @@ export default function Prototype() {
   const [selected,setSelected]=useState<string|null>(null); const [filter,setFilter]=useState('');
   const [sessions,setSessions]=useState<Record<string,string>>(stored('hermes.sessions',{}));
   const [drafts,setDrafts]=useState<Record<string,string>>(stored('hermes.drafts',{}));
+  const [historyPending,setHistoryPending]=useState(false); const [historyReload,setHistoryReload]=useState(0);
   const [messages,setMessages]=useState<Message[]>([]); const [historyBusy,setHistoryBusy]=useState(false);
   const [error,setError]=useState(''); const [historyError,setHistoryError]=useState(''); const [loading,setLoading]=useState(true);
   const [sending,setSending]=useState(false); const [pendingSend,setPendingSend]=useState<unknown>(stored('hermes.pending',null)); const [track,setTrack]=useState(false); const [workFilter,setWorkFilter]=useState('Active');
@@ -44,13 +45,24 @@ export default function Prototype() {
   useEffect(()=>{sessionStorage.setItem('hermes.sessions',JSON.stringify(sessions));},[sessions]);
   useEffect(()=>{sessionStorage.setItem('hermes.drafts',JSON.stringify(drafts));},[drafts]);
   const revision=currentRuns.map(r=>r.status).join('|');
+  useEffect(()=>{setMessages([]);setHistoryPending(false);},[selected,sessionId]);
   useEffect(()=>{
-    let ignore=false;setMessages([]);setHistoryError('');
+    let ignore=false;let retry:ReturnType<typeof setTimeout>|undefined;setHistoryError('');setHistoryPending(false);
     if(!selected||!sessionId){setHistoryBusy(false);return;}
     setHistoryBusy(true);
-    api<{messages:Message[]}>('/profiles/'+encodeURIComponent(selected)+'/sessions/'+encodeURIComponent(sessionId)).then(v=>{if(!ignore)setMessages(v.messages);}).catch(e=>{if(!ignore)setHistoryError(e.message);}).finally(()=>{if(!ignore)setHistoryBusy(false);});
-    return()=>{ignore=true;};
-  },[selected,sessionId,revision]);
+    async function loadHistory(){
+      try{
+        const v=await api<{messages:Message[];pending?:boolean}>('/profiles/'+encodeURIComponent(selected!)+'/sessions/'+encodeURIComponent(sessionId));
+        if(ignore)return;
+        setHistoryPending(Boolean(v.pending));
+        if(v.pending)retry=setTimeout(()=>void loadHistory(),2000);
+        else {setMessages(v.messages);setHistoryError('');}
+      }catch(e){if(!ignore){setHistoryPending(false);setHistoryError((e as Error).message);}}
+      finally{if(!ignore)setHistoryBusy(false);}
+    }
+    void loadHistory();
+    return()=>{ignore=true;if(retry)clearTimeout(retry);};
+  },[selected,sessionId,revision,historyReload]);
   function navigate(next:typeof tab){keyboard.hide();setSelected(null);setTab(next);setError('');setFilter('');}
   function openAgent(id:string,sid?:string){keyboard.hide();setSelected(id);setError('');setTrack(false);if(sid)setSessions(s=>({...s,[id]:sid}));}
   function fresh(){if(!selected)return;keyboard.hide();setSessions(s=>({...s,[selected]:''}));setMessages([]);setSheet(null);setTrack(false);}
@@ -92,8 +104,8 @@ export default function Prototype() {
       {selected&&<>
         {Boolean(pendingSend)&&<button className="attention-row" disabled={sending} onClick={()=>void recoverSend()}><ExclamationTriangleIcon/><span>Recover unconfirmed send</span><ChevronRightIcon/></button>}{busyRun&&<button className="activity-row" onClick={()=>setDetail(busyRun)}><span className={'status-dot '+(busyRun.connectionError?'amber':'')}/><span>{busyRun.connectionError?'Connection needs checking':statusText(busyRun.status)+' on Omarchy'}</span><ChevronRightIcon/></button>}
         {!active?.connected&&<div className="notice">{active?.reason||'This profile is unavailable.'} Start its existing Hermes API gateway on the host, then refresh.</div>}
-        {historyBusy&&<p className="muted">Loading conversation…</p>}
-        {historyError&&<div className="notice">{historyError} {lastRun?'The local run record is shown below.':'Try another conversation or start a new one.'}</div>}
+        {historyBusy&&<p className="muted">Loading conversation…</p>}{historyPending&&<p className="muted" role="status">Preparing conversation… Your message is already with Hermes.</p>}
+        {historyError&&<div className="notice">{historyError} {lastRun?'The local run record is shown below.':'The conversation could not be loaded.'}<button className="wide-button secondary" onClick={()=>setHistoryReload(n=>n+1)}>Retry loading history</button></div>}
         {!historyBusy&&messages.length===0&&!lastRun&&<div className="welcome"><Avatar id={selected}/><h2>Talk to {active?.name||selected}</h2><p>Send a message to this profile’s real Hermes runtime. Its existing tools and permissions apply.</p><span className="local-label">RUNS ON OMARCHY</span></div>}
         <div className="messages" aria-live="polite">{messages.map((m,i)=><div key={m.id||i} className={'message '+m.role}>{m.role==='assistant'&&<Avatar id={selected} small/>}<p>{m.content}</p></div>)}
         {lastRun&&!messages.some(m=>m.role==='user'&&m.content===lastRun.input)&&<div className="message user"><p>{lastRun.input}</p></div>}

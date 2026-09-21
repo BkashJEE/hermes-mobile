@@ -35,7 +35,13 @@ export function createBridge({ root = path.join(os.homedir(), '.hermes'), stateD
     let res;
     try { res = await fetcher(new URL(route, bot.base), { method, redirect: 'error', signal: AbortSignal.timeout(12000), headers: { Authorization: `Bearer ${bot.key}`, Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}), ...(key ? { 'Idempotency-Key': key } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
     catch { throw fail('The Hermes gateway did not respond. Check the connection, then retry the same request.', 503); }
-    if (!res.ok) throw fail(res.status === 401 ? 'The gateway rejected its configured API key.' : `Hermes returned HTTP ${res.status}.`, res.status === 404 ? 404 : res.status === 409 ? 409 : 502);
+    if (!res.ok) {
+      const error = fail(res.status === 401 ? 'The gateway rejected its configured API key.' : `Hermes returned HTTP ${res.status}.`, res.status === 404 ? 404 : res.status === 409 ? 409 : 502);
+      if (res.status === 404) {
+        try { const detail = await res.json(); if (detail.error?.code === 'session_not_found') error.code = 'session_not_found'; } catch {}
+      }
+      throw error;
+    }
     const text = await res.text();
     if (text.length > 4_000_000) throw fail('Hermes response exceeded the preview limit.', 502);
     try { return JSON.parse(text); } catch { throw fail('Hermes returned an invalid response.', 502); }
@@ -103,7 +109,16 @@ export function createBridge({ root = path.join(os.homedir(), '.hermes'), stateD
     }
     m = route.match(/^\/profiles\/([\w-]+)\/sessions\/([\w.:-]+)$/);
     if (method === 'GET' && m) {
-      const result = await upstream(botFor(m[1]), 'GET', `/api/sessions/${encodeURIComponent(m[2])}/messages?limit=100&order=latest`);
+      let result;
+      try { result = await upstream(botFor(m[1]), 'GET', `/api/sessions/${encodeURIComponent(m[2])}/messages?limit=100&order=latest`); }
+      catch (e) {
+        // Runs are accepted before the new transcript row is persisted. Only a
+        // known new session may be temporarily absent; unrelated 404s stay errors.
+        const starting = Object.values(records).some(r => r.profileId === m[1] && r.sessionId === m[2] && r.originalSession === `hm_${r.id}` && r.runId && !r.connectionError &&
+          (!terminal(r.status) || (r.status === 'completed' && Date.now() - r.updatedAt < 15000)));
+        if (e.status === 404 && e.code === 'session_not_found' && starting) return { sessionId: m[2], messages: [], pending: true };
+        throw e;
+      }
       return { sessionId: result.session_id || m[2], messages: (result.data || []).filter(v => ['user','assistant'].includes(v.role) && contentText(v.content)).map(v => ({ id: v.id, role: v.role, content: contentText(v.content) })), limited: (result.data || []).length >= 100 };
     }
     m = route.match(/^\/runs\/([a-f0-9-]{36})\/(stop|approval)$/);

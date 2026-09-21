@@ -69,3 +69,8 @@ State difference: sources contain fictional working agents, a pending file-edit 
 Added a separate full-screen phone entry without changing protected mobile runtime files. Pairing uses the existing charcoal, silver and cyan palette, a clear two-field form, visible connection errors and large touch targets. Desktop Settings provides code generation, expiry, paired-device listing and revocation. Native phone sheets use Radix Dialog with a visible Close control.
 
 Verified the real HTTPS pairing page at 393 × 852. Verified authenticated agent/chat/history/sheet layouts with read-only fixtures at 393 × 852 and Work at 427 × 952. No console warnings or errors in the layout fixture. Live HTTPS authentication and immediate revocation passed through the API; no new model run was needed. Thirteen backend tests and both production builds passed; all 28 protected runtime hashes remain intact. Physical iOS/Android keyboards have not been verified.
+
+
+## New-session history race fix
+
+Confirmed the reported message completed and its history became available without resubmission. Added backend regression checks for pending new transcripts, later persistence, unrelated 404s, and bounded completion grace. Browser fixture verification observed the preparing state automatically become the saved transcript. Reloaded the paired app and confirmed the original conversation and reply remained visible. Fifteen tests, both builds, and all protected runtime checks passed.
