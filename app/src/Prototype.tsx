@@ -35,7 +35,7 @@ export default function Prototype() {
   const pending=runs.filter(r=>r.status==='waiting_for_approval');
   const refresh=useCallback(async()=>{
     const result=await Promise.allSettled([api<{profiles:Profile[];checkedAt:number}>('/profiles'),api<{runs:Run[]}>('/runs')]);
-    if(result[0].status==='fulfilled'){setProfiles(result[0].value.profiles);setCheckedAt(result[0].value.checkedAt);} 
+    if(result[0].status==='fulfilled'){setProfiles(result[0].value.profiles);setCheckedAt(result[0].value.checkedAt);}
     if(result[1].status==='fulfilled'){setRuns(result[1].value.runs);setRunsOnline(true);} else setRunsOnline(false);
     if(result.some(r=>r.status==='rejected'))setError('The local connection was interrupted. Displayed states may be stale.');
     setLoading(false);
