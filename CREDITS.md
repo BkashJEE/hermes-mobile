@@ -13,3 +13,7 @@ When code is imported, add its exact upstream commit, the affected paths, applic
 ## Hermes Agent
 
 Hermes Agent is the upstream agent project this community intends to support. This repository is an independent initiative and claims no endorsement by Nous Research or Mercury's maintainers.
+
+## Local integration preview
+
+The local browser preview uses the Product Design mobile starter, React, Vite, Radix UI icons/dialogs, Motion, use-gesture and Fontsource Roboto. Their existing dependency notices and licenses apply. The Hermes winged-helmet raster asset was generated for this project. Local gateway discovery was informed by the existing Hermes Companion integration; the bridge uses the installed Hermes API contract. No private credentials, state, or transcripts are bundled. Mercury and Agent Dock source have not been imported into this preview.

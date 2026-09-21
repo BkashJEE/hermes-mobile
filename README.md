@@ -4,7 +4,9 @@ An open-source community project to make Hermes Agent useful from your phone.
 
 Shared code. Shared credit. Built in public.
 
-**Status: project kickoff.** This repository currently contains the project plan and contribution guides. There is no app release or verified build here yet.
+**Status: private phone web preview.** The `app/` directory now contains a mobile browser interface connected to existing local Hermes API gateways. Profile discovery, a two-turn conversation and reload recovery were verified on Omarchy. There is no native app release or physical-phone verification yet.
+
+Run `cd app && npm ci && npm run dev`, then open `http://127.0.0.1:4186` on the host. See [local integration and limits](app/README.md). API keys stay on the host. Optional phone access uses a separate authenticated server behind private Tailscale HTTPS; see the pairing setup in the app README.
 
 This is an independent community initiative, not an official Nous Research product and not endorsed by Nous Research.
 
@@ -12,7 +14,7 @@ This is an independent community initiative, not an official Nous Research produ
 
 We are bringing developers, designers, testers, and people with useful ideas together around a mobile companion for Hermes Agent.
 
-Our first milestone is to evaluate [Mercury](https://github.com/unsupportedpastels/mercury), reproduce its Android build, and document what we can reuse before choosing our implementation path. Mercury already provides Android and iOS clients; we should understand that work before duplicating it.
+The native-client milestone remains to evaluate [Mercury](https://github.com/unsupportedpastels/mercury), reproduce its Android build, and document what we can reuse before choosing our implementation path. Mercury already provides Android and iOS clients; we should understand that work before duplicating it.
 
 The intended first demo is small: connect to a compatible Hermes host, open a session, send a prompt, and read the streamed response. Hermes runs on the host; the phone is its companion.
 
