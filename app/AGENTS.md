@@ -9,6 +9,7 @@ Before planning or implementing any mobile-app change, read this `AGENTS.md` in 
 Before making substantial visual changes, use the Product Design plugin's `get-context` skill when the visual source is unclear or no longer matches the current goal. When the user gives durable prototype-specific design feedback, preferences, or decisions, record them in `AGENTS.md`.
 
 Use a distinct professional duotone profile icon for each named agent. Preserve the winged Hermes emblem for the default profile; do not reuse generic chat, search, or person icons across multiple agent profiles.
+Use Phosphor icons for app-owned navigation and action controls. Use duotone weight for selected navigation, profiles, alerts, and other stateful symbols; use bold weight for directional and compact action icons.
 
 When implementing from a selected generated mock, treat that image as the source of truth for layout, component anatomy, density, spacing, color, typography, visible content, and hierarchy.
 

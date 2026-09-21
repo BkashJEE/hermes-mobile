@@ -2,7 +2,7 @@
 
 Date: 2026-09-20
 
-final result: passed
+final result: blocked
 
 Scope: the user's request to wire the current design to local Omarchy Hermes. This is an integration preview, not a pixel-identical reproduction of fictional data or a native-device certification.
 
@@ -102,4 +102,35 @@ State: authenticated Agents list with the same live profiles and dark theme. The
 
 Comparison history: initial evidence showed repeated chat symbols for CEO/Gary plus generic search/person symbols for Sanju/Nova. The post-fix normalized comparison shows five visually distinct glyphs with consistent stroke weight, scale, circle treatment, and baseline alignment.
 
-final result: passed
+Section result: passed
+
+## Navigation and action icon update — September 21, 2026
+
+Source visual truth: `/tmp/hermes-icons-after.png` (381 × 824 pixels), the immediately preceding live Agents screen with the approved profile icons and the older navigation/action icon set. Implementation: `http://127.0.0.1:4186/`, opened and exercised in the Codex in-app browser at a temporary 390 × 844 CSS viewport and then returned to the default viewport.
+
+Implementation screenshot path: unavailable. The in-app browser rendered the updated application and exposed its accessibility tree and DOM, but both its standard and full-page screenshot operations returned `Unable to capture screenshot`. Because no browser-rendered image could be captured, a normalized side-by-side visual comparison could not be created.
+
+**Verified rendered state**
+
+- Bottom navigation renders Agents, Work, and Settings with Phosphor SVGs at 24 × 24 CSS pixels. The selected Agents icon renders the duotone form; inactive icons render the regular form.
+- Refresh, back, conversation history, new conversation, search, send, alert, approval, stop, and row-detail controls render Phosphor SVGs from the same icon family.
+- Navigated Agents → Work → Settings, opened CEO, verified back/history/new/send controls, then returned to Agents.
+- Browser console warnings/errors: none.
+- Fifteen bridge/phone tests and four Sites-worker tests pass. Both production builds pass, and all 28 protected runtime files pass integrity checks.
+
+**Required fidelity surfaces**
+
+- Fonts and typography: source code and DOM structure remain unchanged, but fresh pixel evidence is unavailable.
+- Spacing and layout rhythm: app-owned layout values remain unchanged; bottom-tab SVGs are explicitly 24 × 24. Fresh pixel evidence is unavailable.
+- Colors and visual tokens: existing charcoal, silver, and cyan tokens remain unchanged; selected navigation adds only a restrained cyan icon shadow. Fresh pixel evidence is unavailable.
+- Image quality and asset fidelity: the Hermes emblem and agent-profile assets are unchanged. New controls use the official Phosphor React library rather than handcrafted artwork.
+- Copy and content: unchanged.
+
+**Findings**
+
+- No functional, console, build, runtime-integrity, or DOM-size regression was found.
+- Visual QA is blocked because the selected browser could not produce the required implementation screenshot. This prevents a valid full-view and focused side-by-side comparison.
+
+Comparison history: the previous profile-icon pass remains valid for the agent avatars. The current navigation/action pass has no acceptable post-fix screenshot evidence.
+
+final result: blocked
